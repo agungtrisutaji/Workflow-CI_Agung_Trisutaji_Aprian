@@ -1,0 +1,15 @@
+artifact_uri: file:///D:/Learn/Dicoding/Pijak/Membangun%20Sistem%20Machine%20Learning/submission/Eksperimen_SML_Agung_Trisutaji_Aprian/Workflow-CI/MLProject/mlruns/0/89e3d601c81544c7a2dd662f21c2cb49/artifacts
+end_time: 1780993787388
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 89e3d601c81544c7a2dd662f21c2cb49
+run_name: casual-moth-591
+run_uuid: 89e3d601c81544c7a2dd662f21c2cb49
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1780993774768
+status: 3
+tags: []
+user_id: AGUNG_APRIAN

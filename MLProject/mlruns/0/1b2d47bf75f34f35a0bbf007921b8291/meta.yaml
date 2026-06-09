@@ -1,0 +1,15 @@
+artifact_uri: file:///D:/Learn/Dicoding/Pijak/Membangun%20Sistem%20Machine%20Learning/submission/Eksperimen_SML_Agung_Trisutaji_Aprian/Workflow-CI/MLProject/mlruns/0/1b2d47bf75f34f35a0bbf007921b8291/artifacts
+end_time: 1780993995616
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 1b2d47bf75f34f35a0bbf007921b8291
+run_name: sassy-mink-94
+run_uuid: 1b2d47bf75f34f35a0bbf007921b8291
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1780993982153
+status: 3
+tags: []
+user_id: AGUNG_APRIAN

@@ -1,0 +1,122 @@
+name: Telco Churn MLOps CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-train-and-package:
+    runs-on: ubuntu-latest
+
+    env:
+      DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+      DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+      MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      DOCKER_IMAGE: agungtrisutaji/telco-churn-mlops:latest
+      MLFLOW_DOCKER_IMAGE: agungtrisutaji/telco-churn-mlops
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Create and populate .venv
+        shell: bash
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install -r Membangun_model/requirements.txt
+          python -m pip install -r "Monitoring dan Logging/requirements.txt"
+
+      - name: Check required secrets presence
+        shell: bash
+        run: |
+          for secret_name in DAGSHUB_USERNAME DAGSHUB_TOKEN MLFLOW_TRACKING_URI DOCKERHUB_USERNAME DOCKERHUB_TOKEN; do
+            if [ -n "${!secret_name:-}" ]; then
+              echo "${secret_name} is configured"
+            else
+              echo "${secret_name} is not configured"
+            fi
+          done
+
+      - name: Check datasets
+        shell: bash
+        run: |
+          test -f "telco_customer_churn_raw/WA_Fn-UseC_-Telco-Customer-Churn.csv"
+          test -f "Membangun_model/telco_customer_churn_preprocessing/WA_Fn-UseC_-Telco-Customer-Churn.csv"
+
+      - name: Run Kriteria 1 automated preprocessing
+        shell: bash
+        run: |
+          source .venv/bin/activate
+          python preprocessing/automate_Agung_Trisutaji_Aprian.py
+
+      - name: Run root preprocessing for serving artifacts
+        shell: bash
+        run: |
+          source .venv/bin/activate
+          python Membangun_model/telco_customer_churn_preprocessing/preprocess.py
+
+      - name: Run MLflow Project main entry point
+        shell: bash
+        run: |
+          source .venv/bin/activate
+          cd Workflow-CI/MLProject
+          mlflow run . -e main --env-manager local
+
+      - name: Run MLflow Project tuning entry point
+        shell: bash
+        run: |
+          source .venv/bin/activate
+          cd Workflow-CI/MLProject
+          mlflow run . -e tuning --env-manager local
+
+      - name: Build Docker image with MLflow and fallback Dockerfile
+        shell: bash
+        run: |
+          source .venv/bin/activate
+          MODEL_URI="$(python -c 'import json; from pathlib import Path; p=Path("Workflow-CI/MLProject/artifacts/model_info.json"); print(json.loads(p.read_text()).get("model_uri", "") if p.exists() else "")')"
+          if [ -n "${MODEL_URI}" ]; then
+            echo "Building Docker image with mlflow models build-docker"
+            if mlflow models build-docker -m "${MODEL_URI}" -n "${MLFLOW_DOCKER_IMAGE}"; then
+              docker tag "${MLFLOW_DOCKER_IMAGE}" "${DOCKER_IMAGE}" || docker tag "${MLFLOW_DOCKER_IMAGE}:latest" "${DOCKER_IMAGE}"
+            else
+              echo "MLflow build-docker failed; falling back to Monitoring dan Logging/Dockerfile"
+              docker build -f "Monitoring dan Logging/Dockerfile" -t "${DOCKER_IMAGE}" .
+            fi
+          else
+            echo "model_uri not found; falling back to Monitoring dan Logging/Dockerfile"
+            docker build -f "Monitoring dan Logging/Dockerfile" -t "${DOCKER_IMAGE}" .
+          fi
+
+      - name: Upload preprocessing and model artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: telco-churn-mlops-artifacts
+          path: |
+            preprocessing/telco_customer_churn_preprocessing/
+            Membangun_model/telco_customer_churn_preprocessing/processed/
+            Membangun_model/telco_customer_churn_preprocessing/artifacts/
+            Membangun_model/artifacts/
+            Workflow-CI/MLProject/artifacts/
+
+      - name: Log in to Docker Hub
+        if: ${{ env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push Docker image
+        if: ${{ env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
+        shell: bash
+        run: |
+          docker push "${DOCKER_IMAGE}"

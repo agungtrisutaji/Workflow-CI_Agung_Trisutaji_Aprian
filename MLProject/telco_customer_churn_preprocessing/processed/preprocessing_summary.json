@@ -1,0 +1,52 @@
+{
+  "raw_data_path": "Membangun_model\\telco_customer_churn_preprocessing\\WA_Fn-UseC_-Telco-Customer-Churn.csv",
+  "rows": 7043,
+  "columns": 21,
+  "target_column": "Churn",
+  "target_mapping": {
+    "No": 0,
+    "Yes": 1
+  },
+  "dropped_columns": [
+    "customerID"
+  ],
+  "numeric_columns": [
+    "SeniorCitizen",
+    "tenure",
+    "MonthlyCharges",
+    "TotalCharges"
+  ],
+  "categorical_columns": [
+    "gender",
+    "Partner",
+    "Dependents",
+    "PhoneService",
+    "MultipleLines",
+    "InternetService",
+    "OnlineSecurity",
+    "OnlineBackup",
+    "DeviceProtection",
+    "TechSupport",
+    "StreamingTV",
+    "StreamingMovies",
+    "Contract",
+    "PaperlessBilling",
+    "PaymentMethod"
+  ],
+  "train_rows": 5634,
+  "test_rows": 1409,
+  "test_size": 0.2,
+  "random_state": 42,
+  "missing_values_after_totalcharges_conversion": 11,
+  "output_files": [
+    "X_train.csv",
+    "X_test.csv",
+    "y_train.csv",
+    "y_test.csv",
+    "feature_names.json",
+    "preprocessing_summary.json"
+  ],
+  "artifact_files": [
+    "preprocessor.pkl"
+  ]
+}

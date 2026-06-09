@@ -1,0 +1,16 @@
+# Docker Hub
+
+Target image:
+
+```text
+agungtrisutaji/telco-churn-mlops:latest
+```
+
+GitHub Actions reads Docker Hub credentials only from repository secrets:
+
+```text
+DOCKERHUB_USERNAME
+DOCKERHUB_TOKEN
+```
+
+Do not write Docker Hub tokens in this file or in workflow logs.

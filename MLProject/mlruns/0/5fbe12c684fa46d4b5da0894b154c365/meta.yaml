@@ -1,0 +1,15 @@
+artifact_uri: file:///D:/Learn/Dicoding/Pijak/Membangun%20Sistem%20Machine%20Learning/submission/Eksperimen_SML_Agung_Trisutaji_Aprian/Workflow-CI/MLProject/mlruns/0/5fbe12c684fa46d4b5da0894b154c365/artifacts
+end_time: 1780993755269
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 5fbe12c684fa46d4b5da0894b154c365
+run_name: delightful-snipe-350
+run_uuid: 5fbe12c684fa46d4b5da0894b154c365
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1780993740699
+status: 3
+tags: []
+user_id: AGUNG_APRIAN

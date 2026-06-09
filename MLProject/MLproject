@@ -1,0 +1,10 @@
+name: telco_customer_churn_mlops
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    command: "python modelling.py"
+  tuning:
+    command: "python modelling_tuning.py"
+

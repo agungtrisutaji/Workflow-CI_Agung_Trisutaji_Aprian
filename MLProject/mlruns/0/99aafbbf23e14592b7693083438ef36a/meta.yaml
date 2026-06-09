@@ -1,0 +1,15 @@
+artifact_uri: file:///D:/Learn/Dicoding/Pijak/Membangun%20Sistem%20Machine%20Learning/submission/Eksperimen_SML_Agung_Trisutaji_Aprian/Workflow-CI/MLProject/mlruns/0/99aafbbf23e14592b7693083438ef36a/artifacts
+end_time: 1780993979707
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 99aafbbf23e14592b7693083438ef36a
+run_name: learned-owl-475
+run_uuid: 99aafbbf23e14592b7693083438ef36a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1780993966232
+status: 3
+tags: []
+user_id: AGUNG_APRIAN

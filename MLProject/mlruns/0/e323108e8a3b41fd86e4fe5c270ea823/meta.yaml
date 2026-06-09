@@ -1,0 +1,15 @@
+artifact_uri: file:///D:/Learn/Dicoding/Pijak/Membangun%20Sistem%20Machine%20Learning/submission/Eksperimen_SML_Agung_Trisutaji_Aprian/Workflow-CI/MLProject/mlruns/0/e323108e8a3b41fd86e4fe5c270ea823/artifacts
+end_time: 1780993754637
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: e323108e8a3b41fd86e4fe5c270ea823
+run_name: baseline_RandomForestClassifier
+run_uuid: e323108e8a3b41fd86e4fe5c270ea823
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1780993748621
+status: 3
+tags: []
+user_id: AGUNG_APRIAN

@@ -1,0 +1,69 @@
+artifact_path: model
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.11.9
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.5.2
+mlflow_version: 2.18.0
+model_size_bytes: 2098450
+model_uuid: 987251dcfa274d4c96900c62f0d885d9
+run_id: 1b2d47bf75f34f35a0bbf007921b8291
+saved_input_example_info:
+  artifact_path: input_example.json
+  pandas_orient: split
+  serving_input_path: serving_input_example.json
+  type: dataframe
+signature:
+  inputs: '[{"type": "double", "name": "num__SeniorCitizen", "required": true}, {"type":
+    "double", "name": "num__tenure", "required": true}, {"type": "double", "name":
+    "num__MonthlyCharges", "required": true}, {"type": "double", "name": "num__TotalCharges",
+    "required": true}, {"type": "double", "name": "cat__gender_Female", "required":
+    true}, {"type": "double", "name": "cat__gender_Male", "required": true}, {"type":
+    "double", "name": "cat__Partner_No", "required": true}, {"type": "double", "name":
+    "cat__Partner_Yes", "required": true}, {"type": "double", "name": "cat__Dependents_No",
+    "required": true}, {"type": "double", "name": "cat__Dependents_Yes", "required":
+    true}, {"type": "double", "name": "cat__PhoneService_No", "required": true}, {"type":
+    "double", "name": "cat__PhoneService_Yes", "required": true}, {"type": "double",
+    "name": "cat__MultipleLines_No", "required": true}, {"type": "double", "name":
+    "cat__MultipleLines_No phone service", "required": true}, {"type": "double", "name":
+    "cat__MultipleLines_Yes", "required": true}, {"type": "double", "name": "cat__InternetService_DSL",
+    "required": true}, {"type": "double", "name": "cat__InternetService_Fiber optic",
+    "required": true}, {"type": "double", "name": "cat__InternetService_No", "required":
+    true}, {"type": "double", "name": "cat__OnlineSecurity_No", "required": true},
+    {"type": "double", "name": "cat__OnlineSecurity_No internet service", "required":
+    true}, {"type": "double", "name": "cat__OnlineSecurity_Yes", "required": true},
+    {"type": "double", "name": "cat__OnlineBackup_No", "required": true}, {"type":
+    "double", "name": "cat__OnlineBackup_No internet service", "required": true},
+    {"type": "double", "name": "cat__OnlineBackup_Yes", "required": true}, {"type":
+    "double", "name": "cat__DeviceProtection_No", "required": true}, {"type": "double",
+    "name": "cat__DeviceProtection_No internet service", "required": true}, {"type":
+    "double", "name": "cat__DeviceProtection_Yes", "required": true}, {"type": "double",
+    "name": "cat__TechSupport_No", "required": true}, {"type": "double", "name": "cat__TechSupport_No
+    internet service", "required": true}, {"type": "double", "name": "cat__TechSupport_Yes",
+    "required": true}, {"type": "double", "name": "cat__StreamingTV_No", "required":
+    true}, {"type": "double", "name": "cat__StreamingTV_No internet service", "required":
+    true}, {"type": "double", "name": "cat__StreamingTV_Yes", "required": true}, {"type":
+    "double", "name": "cat__StreamingMovies_No", "required": true}, {"type": "double",
+    "name": "cat__StreamingMovies_No internet service", "required": true}, {"type":
+    "double", "name": "cat__StreamingMovies_Yes", "required": true}, {"type": "double",
+    "name": "cat__Contract_Month-to-month", "required": true}, {"type": "double",
+    "name": "cat__Contract_One year", "required": true}, {"type": "double", "name":
+    "cat__Contract_Two year", "required": true}, {"type": "double", "name": "cat__PaperlessBilling_No",
+    "required": true}, {"type": "double", "name": "cat__PaperlessBilling_Yes", "required":
+    true}, {"type": "double", "name": "cat__PaymentMethod_Bank transfer (automatic)",
+    "required": true}, {"type": "double", "name": "cat__PaymentMethod_Credit card
+    (automatic)", "required": true}, {"type": "double", "name": "cat__PaymentMethod_Electronic
+    check", "required": true}, {"type": "double", "name": "cat__PaymentMethod_Mailed
+    check", "required": true}]'
+  outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "int64", "shape": [-1]}}]'
+  params: null
+utc_time_created: '2026-06-09 08:33:10.650823'

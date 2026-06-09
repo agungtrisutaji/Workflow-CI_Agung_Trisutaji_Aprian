@@ -1,0 +1,28 @@
+{
+  "experiment_name": "telco-customer-churn-agungtrisutaji",
+  "model_name": "RandomForestClassifier",
+  "selection_metric": "f1_score",
+  "best_cv_f1_score": 0.6351975108648228,
+  "best_params": {
+    "max_depth": 8,
+    "min_samples_leaf": 2,
+    "n_estimators": 80
+  },
+  "test_metrics": {
+    "accuracy": 0.7579843860894251,
+    "precision": 0.5306122448979592,
+    "recall": 0.7647058823529411,
+    "f1_score": 0.6265060240963856,
+    "roc_auc": 0.8414735591206179
+  },
+  "run_id": "1b2d47bf75f34f35a0bbf007921b8291",
+  "model_uri": "runs:/1b2d47bf75f34f35a0bbf007921b8291/model",
+  "model_artifact_uri": "runs:/1b2d47bf75f34f35a0bbf007921b8291/model",
+  "artifact": "artifacts\\tuned_model.pkl",
+  "local_evaluation_artifacts": [
+    "tuning_classification_report.txt",
+    "tuning_confusion_matrix.png",
+    "tuning_metric_info.json",
+    "tuning_feature_importance.csv"
+  ]
+}
