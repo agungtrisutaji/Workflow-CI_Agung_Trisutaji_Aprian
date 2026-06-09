@@ -10,113 +10,128 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
-      DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
-      MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-      DOCKER_IMAGE: agungtrisutaji/telco-churn-mlops:latest
+      DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }} 
+      DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }} 
+      MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }} 
+      MLFLOW_TRACKING_USERNAME: ${{ secrets.DAGSHUB_USERNAME }} 
+      MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }} 
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }} 
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }} 
+      DOCKER_IMAGE: agungtrisutaji/telco-churn-mlops:latest 
       MLFLOW_DOCKER_IMAGE: agungtrisutaji/telco-churn-mlops
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Run actions/checkout@v3 
+        uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+      - name: Set up Python 3.12.7 
+        uses: actions/setup-python@v5 
+        with: 
+          python-version: "3.12.7"
 
-      - name: Create and populate .venv
+      - name: Check Env
         shell: bash
         run: |
-          python -m venv .venv
-          source .venv/bin/activate
-          python -m pip install --upgrade pip
-          python -m pip install -r Membangun_model/requirements.txt
-          python -m pip install -r "Monitoring dan Logging/requirements.txt"
-
-      - name: Check required secrets presence
-        shell: bash
-        run: |
+          missing=0
           for secret_name in DAGSHUB_USERNAME DAGSHUB_TOKEN MLFLOW_TRACKING_URI DOCKERHUB_USERNAME DOCKERHUB_TOKEN; do
             if [ -n "${!secret_name:-}" ]; then
               echo "${secret_name} is configured"
             else
-              echo "${secret_name} is not configured"
+              echo "::error::${secret_name} is not configured"
+              missing=1
             fi
           done
+          exit "${missing}"
 
-      - name: Check datasets
+      - name: Install dependencies
         shell: bash
         run: |
-          test -f "telco_customer_churn_raw/WA_Fn-UseC_-Telco-Customer-Churn.csv"
-          test -f "Membangun_model/telco_customer_churn_preprocessing/WA_Fn-UseC_-Telco-Customer-Churn.csv"
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -r MLProject/requirements.txt
 
-      - name: Run Kriteria 1 automated preprocessing
+      - name: Run mlflow project
         shell: bash
         run: |
           source .venv/bin/activate
-          python preprocessing/automate_Agung_Trisutaji_Aprian.py
-
-      - name: Run root preprocessing for serving artifacts
-        shell: bash
-        run: |
-          source .venv/bin/activate
-          python Membangun_model/telco_customer_churn_preprocessing/preprocess.py
-
-      - name: Run MLflow Project main entry point
-        shell: bash
-        run: |
-          source .venv/bin/activate
-          cd Workflow-CI/MLProject
+          export MLFLOW_TRACKING_USERNAME="${DAGSHUB_USERNAME}"
+          export MLFLOW_TRACKING_PASSWORD="${DAGSHUB_TOKEN}"
+          test -f "MLProject/telco_customer_churn_preprocessing/WA_Fn-UseC_-Telco-Customer-Churn.csv"
+          cd MLProject
+          python telco_customer_churn_preprocessing/preprocess.py
           mlflow run . -e main --env-manager local
-
-      - name: Run MLflow Project tuning entry point
-        shell: bash
-        run: |
-          source .venv/bin/activate
-          cd Workflow-CI/MLProject
           mlflow run . -e tuning --env-manager local
 
-      - name: Build Docker image with MLflow and fallback Dockerfile
+      - name: Get latest MLflow run_id
         shell: bash
         run: |
           source .venv/bin/activate
-          MODEL_URI="$(python -c 'import json; from pathlib import Path; p=Path("Workflow-CI/MLProject/artifacts/model_info.json"); print(json.loads(p.read_text()).get("model_uri", "") if p.exists() else "")')"
-          if [ -n "${MODEL_URI}" ]; then
-            echo "Building Docker image with mlflow models build-docker"
-            if mlflow models build-docker -m "${MODEL_URI}" -n "${MLFLOW_DOCKER_IMAGE}"; then
-              docker tag "${MLFLOW_DOCKER_IMAGE}" "${DOCKER_IMAGE}" || docker tag "${MLFLOW_DOCKER_IMAGE}:latest" "${DOCKER_IMAGE}"
-            else
-              echo "MLflow build-docker failed; falling back to Monitoring dan Logging/Dockerfile"
-              docker build -f "Monitoring dan Logging/Dockerfile" -t "${DOCKER_IMAGE}" .
-            fi
-          else
-            echo "model_uri not found; falling back to Monitoring dan Logging/Dockerfile"
-            docker build -f "Monitoring dan Logging/Dockerfile" -t "${DOCKER_IMAGE}" .
-          fi
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
 
-      - name: Upload preprocessing and model artifacts
+          model_info_path = Path("MLProject/artifacts/model_info.json")
+          if not model_info_path.exists():
+              raise SystemExit("MLProject/artifacts/model_info.json was not found.")
+
+          model_info = json.loads(model_info_path.read_text(encoding="utf-8"))
+          run_id = model_info.get("best_run_id", "")
+          model_uri = model_info.get("model_uri", "")
+
+          if not run_id:
+              raise SystemExit("best_run_id was not found in model_info.json.")
+
+          if not model_uri:
+              model_uri = f"runs:/{run_id}/model"
+
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+              env_file.write(f"MLFLOW_RUN_ID={run_id}\n")
+              env_file.write(f"MODEL_URI={model_uri}\n")
+
+          print("Latest MLflow run_id has been exported.")
+          print(f"Model URI: {model_uri}")
+          PY
+
+      - name: Install Python dependencies
+        shell: bash
+        run: |
+          source .venv/bin/activate
+          python -m pip install -r MLProject/requirements.txt
+          python -m pip check
+
+      - name: Upload to GitHub
         uses: actions/upload-artifact@v4
         with:
           name: telco-churn-mlops-artifacts
           path: |
-            preprocessing/telco_customer_churn_preprocessing/
-            Membangun_model/telco_customer_churn_preprocessing/processed/
-            Membangun_model/telco_customer_churn_preprocessing/artifacts/
-            Membangun_model/artifacts/
-            Workflow-CI/MLProject/artifacts/
+            MLProject/telco_customer_churn_preprocessing/processed/
+            MLProject/telco_customer_churn_preprocessing/artifacts/
+            MLProject/artifacts/
+
+      - name: Build Docker Model
+        shell: bash
+        run: |
+          source .venv/bin/activate
+          if [ -z "${MODEL_URI:-}" ]; then
+            echo "::error::MODEL_URI is empty."
+            exit 1
+          fi
+          mlflow models build-docker -m "${MODEL_URI}" -n "${MLFLOW_DOCKER_IMAGE}"
 
       - name: Log in to Docker Hub
-        if: ${{ env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Push Docker image
-        if: ${{ env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
+      - name: Tag Docker Image
+        shell: bash
+        run: |
+          docker tag "${MLFLOW_DOCKER_IMAGE}" "${DOCKER_IMAGE}" || docker tag "${MLFLOW_DOCKER_IMAGE}:latest" "${DOCKER_IMAGE}"
+
+      - name: Push Docker Image
         shell: bash
         run: |
           docker push "${DOCKER_IMAGE}"
