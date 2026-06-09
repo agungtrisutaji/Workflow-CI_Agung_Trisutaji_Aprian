@@ -118,7 +118,62 @@ jobs:
             echo "::error::MODEL_URI is empty."
             exit 1
           fi
-          mlflow models build-docker -m "${MODEL_URI}" -n "${MLFLOW_DOCKER_IMAGE}"
+
+          echo "Trying MLflow build-docker first..."
+          set +e
+          mlflow models build-docker -m "${MODEL_URI}" -n "${MLFLOW_DOCKER_IMAGE}" --env-manager local
+          MLFLOW_BUILD_EXIT=$?
+          set -e
+
+          if [ "${MLFLOW_BUILD_EXIT}" -eq 0 ]; then
+            echo "MLflow build-docker succeeded."
+            exit 0
+          fi
+
+          echo "MLflow build-docker failed because of generated Dockerfile/runtime issue."
+          echo "Falling back to a controlled Dockerfile while keeping the Docker image target."
+
+          rm -rf docker_model
+          python - <<'PY'
+          import os
+          import shutil
+          from pathlib import Path
+
+          import mlflow
+
+          model_uri = os.environ["MODEL_URI"]
+          target = Path("docker_model")
+
+          if target.exists():
+              shutil.rmtree(target)
+
+          downloaded_path = Path(mlflow.artifacts.download_artifacts(artifact_uri=model_uri))
+          shutil.copytree(downloaded_path, target)
+
+          print(f"Downloaded MLflow model from {model_uri} to {target}")
+          PY
+
+          cat > Dockerfile.mlflow-fallback <<'DOCKERFILE'
+          FROM python:3.12-slim
+
+          WORKDIR /app
+
+          ENV PYTHONDONTWRITEBYTECODE=1
+          ENV PYTHONUNBUFFERED=1
+
+          RUN python -m pip install --upgrade pip setuptools wheel
+
+          COPY MLProject/requirements.txt /app/requirements.txt
+          RUN pip install --no-cache-dir -r /app/requirements.txt
+
+          COPY docker_model /app/model
+
+          EXPOSE 8080
+
+          CMD ["mlflow", "models", "serve", "-m", "/app/model", "--host", "0.0.0.0", "--port", "8080", "--env-manager", "local"]
+          DOCKERFILE
+
+          docker build -f Dockerfile.mlflow-fallback -t "${MLFLOW_DOCKER_IMAGE}" .
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
